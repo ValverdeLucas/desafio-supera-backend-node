@@ -9,3 +9,5 @@ CREATE TABLE usuarios (
 );
 
 SELECT * FROM usuarios;
+
+DROP TABLE usuarios;

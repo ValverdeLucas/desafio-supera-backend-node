@@ -7,17 +7,35 @@ const app = express();
 
 var regexTelefone = new RegExp('^\\([1-9]{2}\\) 9[0-9]{4}\-[0-9]{4}$');
 
+function validatePositiveInteger(value: number): boolean {
+    return Number.isInteger(value) && value > 0;
+}
+
+const MAX_LIMIT = 100;
+
+interface UserRouteRequest extends express.Request {
+    query: {
+        limit: string;
+    };
+    params: {
+        page: string;
+    }
+}
+
 app.use(express.json());
 app.use(cors());
 app.listen(3003, () => {
     console.log("Servidor rodando na porta 3003");
 });
 
-app.get("/users", async (req: Request, res: Response) => {
+
+app.get("/users/all", async (req: Request, res: Response) => {
+
     try {
 
-        const result = await db.raw(`SELECT * FROM usuarios LIMIT 5`)
-        res.status(200).send(result)
+        const result = await db.raw(`
+            SELECT * FROM usuarios`);
+        res.status(200).json(result);
 
     } catch (error: any) {
 
@@ -29,6 +47,66 @@ app.get("/users", async (req: Request, res: Response) => {
         } else {
             res.send("Erro inesperado!")
         }
+    }
+});
+
+app.get("/users/page:page", async (req: UserRouteRequest, res: Response) => {
+    try {
+
+        let page = parseInt(req.params.page, 10);
+        let limit = parseInt(req.query.limit || "5", 10);
+
+        if (!validatePositiveInteger(page) || !validatePositiveInteger(limit)) {
+            throw new Error("Página e Limite devem ser números inteiros positivos");
+        }
+
+        if (limit > MAX_LIMIT) {
+            throw new Error(`Limite máximo permitido é ${MAX_LIMIT}`);
+        }
+
+        const offset = (page - 1) * limit;
+
+        const result = await db.raw(`
+            SELECT * FROM usuarios 
+            ORDER BY id ASC
+            LIMIT ${limit} OFFSET ${offset}`);
+
+        const totalCount = await db.raw('SELECT COUNT (*) as total FROM usuarios');
+        const total = totalCount[0]?.total ?? 0;
+        const totalPages = Math.min(Math.max(Math.ceil(total / limit), 1), Number.MAX_SAFE_INTEGER);
+
+        if (page > totalPages) {
+            throw new Error(`Página ${page} não encontrada`);
+        }
+
+        res.status(200).json({
+            users: result,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalItems: total,
+                itemsPerPage: limit
+            }
+        });
+
+    } catch (error: any) {
+
+        console.error("Erro ao buscar usuários paginados:", error);
+
+        let statusCode = 500;
+        let errorMessage = "Ocorreu um erro interno ao buscar os usuários";
+
+        if (error instanceof Error) {
+            if (error.message.includes("Página")) {
+                statusCode = 404;
+                errorMessage = error.message;
+            } else if (error.message.includes("Limite") || error.message.includes("Página")) {
+                statusCode = 400;
+                errorMessage = error.message;
+            }
+        }
+
+        res.status(statusCode).json({ error: errorMessage });
     }
 });
 
