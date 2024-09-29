@@ -142,7 +142,11 @@ O Postman com a collection da API pode ser encontrado no seguinte link:
 
 #### Olá, eu sou o Lucas! 👋
 
-Eu sou uma pessoa desenvolvedora full-stack e possuo conhecimentos em tecnologias de Front End: **React.JS**, **JavaScript**, **HTML** e **CSS**, e tecnologias do Back End, tais como **TypeScript**, **Java** e **Spring Boot**. Também tenho fundamentos no estudo e uso de **APIs RESTFul** e **Banco de Dados** (**Relacionais** e **Não-Relacionais**).
+Sou desenvolvedor full-stack apaixonado por tecnologia e sempre em busca de novos desafios. Minha especialidade está no desenvolvimento de soluções de Front End utilizando **React.JS**, **JavaScript**, **HTML** e **CSS**, enquanto no Back End trabalho com **TypeScript**, **Java** e **Spring Boot**. Também tenho uma sólida compreensão de **APIs RESTful** e bancos de dados **relacionais** e **não-relacionais**.
+
+Acredito que o aprendizado contínuo e a troca de conhecimento são essenciais para o crescimento profissional, e estou sempre aberto a explorar novas ferramentas e tecnologias!
+
+Vamos conversar sobre tecnologia? Sinta-se à vontade para entrar em contato ou conferir meus outros projetos!
 
 ## 🔗 Redes sociais e Links importantes
 [![portfolio](https://img.shields.io/badge/portfolio-fd2282?style=for-the-badge&logo=ko-fi&logoColor=white)](https://valverde-lucas-portfolio.vercel.app)
