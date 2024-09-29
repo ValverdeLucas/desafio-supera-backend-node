@@ -89,33 +89,48 @@ app.get("/users/page=:page", async (req: UserRouteRequest, res: Response) => {
 
 app.get("/users/search", async (req: UserRouteRequest, res: Response) => {
     try {
-
         const { filterType, filterValue, page = "1", limit = "5" } = req.query;
 
         if (!filterType || !filterValue) {
             return res.status(400).json({ error: "Parâmetros obrigatórios faltando" });
         }
 
+        const allowedFilters = ["nome", "email", "perfil"];
         const filterTypeLower = filterType.toLowerCase().trim();
+
+        if (!allowedFilters.includes(filterTypeLower)) {
+            return res.status(400).json({ error: "Tipo de filtro inválido" });
+        }
+
         const filterValueLower = filterValue.toLowerCase().trim();
 
         const pageInt = parseInt(page, 10);
         const limitInt = parseInt(limit, 10);
         const offset = (pageInt - 1) * limitInt;
 
-        const result = await buildSafeQuery(`SELECT * FROM usuarios WHERE LOWER(${filterTypeLower}) LIKE '%${filterValueLower}%' ORDER BY id ASC LIMIT 5 OFFSET ${offset}`, [`%${filterValueLower}%`, limitInt, offset]);
+        const result = await db.raw(`
+            SELECT * FROM usuarios 
+            WHERE LOWER(${filterTypeLower}) LIKE ? 
+            ORDER BY id ASC 
+            LIMIT ? OFFSET ?
+        `, [`%${filterValueLower}%`, limitInt, offset]);
 
-        const totalCount = await buildSafeQuery('SELECT COUNT(*) as total FROM usuarios WHERE LOWER(${filterTypeLower}) LIKE ?', [`%${filterValueLower}%`]);
+        const totalCount = await db.raw(`
+            SELECT COUNT(*) as total 
+            FROM usuarios 
+            WHERE LOWER(${filterTypeLower}) LIKE ?
+        `, [`%${filterValueLower}%`]);
+
         const total = totalCount[0]?.total ?? 0;
         const totalPages = Math.ceil(total / limitInt);
 
         res.status(200).json({
             users: result,
             pagination: {
-                currentPage: page,
+                currentPage: pageInt,
                 totalPages,
                 totalItems: total,
-                itemsPerPage: limit
+                itemsPerPage: limitInt
             }
         });
 
